@@ -67,7 +67,12 @@ void Control::setID(int& ID)
 
 void Control::setText(string text)
 {
-    m_text = text;
+	if (m_text != text)
+	{
+		m_text = text;
+		setTextLayout(false, CENTER, CENTER);
+	}
+
 }
 
 

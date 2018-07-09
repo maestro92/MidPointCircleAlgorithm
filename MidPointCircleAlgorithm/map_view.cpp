@@ -3,14 +3,6 @@
 
 void MapView::init(Map* map)
 {
-	/*
-	blueGem = utl::loadSDLImage("Assets/blue gem.jpg");
-	redGem = utl::loadSDLImage("Assets/red gem.jpg");
-	orangeGem = utl::loadSDLImage("Assets/orange gem.jpg");
-	purpleGem = utl::loadSDLImage("Assets/purple gem.jpg");
-	greenGem = utl::loadSDLImage("Assets/green gem.jpg");
-	*/
-
 	m_map = map;
 	int w = map->getWidth();
 	int h = map->getHeight();
@@ -70,14 +62,32 @@ void MapView::initGridLines()
 	gridLines.setModel(gridLineModels);
 
 
-/*
-	Model* circleModel;
-	WorldObject circle;
-	*/
-
 
 }
 
+void MapView::initCircle(Circle circle)
+{
+	std::vector<VertexData> vertices;
+	std::vector<unsigned int> indices;
+	VertexData v;
+
+	ModelManager::buildCircle(circle.radius, 0.02, vertices, indices);
+
+	Mesh m(vertices, indices);
+
+	circleModel = new Model();
+	circleModel->addMesh(m);
+
+	circleGameObject.setModel(circleModel);
+	circleGameObject.setPosition(glm::vec3(circle.center.x, circle.center.y, 0));
+
+
+	cirlceCenterGameObject = WorldObject();
+	cirlceCenterGameObject.setModel(global.modelMgr->get(ModelEnum::centeredQuad));
+	cirlceCenterGameObject.setPosition(glm::vec3(circle.center.x, circle.center.y, 0));
+
+	cirlceCenterGameObject.setScale(0.5);
+}
 
 
 WorldObject& MapView::getWorldObject(int x, int y)
@@ -122,6 +132,19 @@ void MapView::render(Pipeline& p)
 	gridLines.renderGroup(p, p_renderer);
 
 
+	if (circleGameObject.canRender())
+	{
+		p_renderer->setData(R_FULL_COLOR::u_color, COLOR_RED);
+		circleGameObject.renderGroup(p, p_renderer);
+	}
+
+	if (cirlceCenterGameObject.canRender())
+	{
+		p_renderer->setData(R_FULL_COLOR::u_color, COLOR_RED);
+		cirlceCenterGameObject.renderGroup(p, p_renderer);
+	}
+
+
 	p_renderer->disableShader();
 }
 
@@ -153,8 +176,5 @@ void MapView::createMeshForGridCellsHighlight(vector<glm::vec2> traversal)
 
 	Mesh m(vertices, indices);
 
-	highlightModel = new Model();
-	highlightModel->addMesh(m);
 
-	highlight.setModel(highlightModel);
 }

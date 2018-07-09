@@ -70,6 +70,8 @@ const int SERVER_SNAPSHOT_TIME_STEP = 1000 / SERVER_SNAPSHOT_PER_SECOND;
 const int CLIENT_INPUT_SENT_PER_SECOND = 33;
 const int CLIENT_INPUT_SENT_TIME_STEP = 1000 / SERVER_SNAPSHOT_PER_SECOND;
 
+const float FRACTIONAL_EDTRA_RADIUS = 0.25f;
+
 
 const float SPAWN_POSITION_UNIT_OFFSET = 40.0f;
 
@@ -111,6 +113,8 @@ void DDARaycasting::init()
 	fpsProfilerIndex = 0;
 
 
+	addHalfRadiusFlag = true;
+	fillCircleFlag = false;
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -159,9 +163,21 @@ void DDARaycasting::init()
 	mapView.init(&map);
 	debugDrawing();
 
+	floatMode = true;
+
 	curCircle.center = glm::vec2(10.5, 10.5);
 	curCircle.radius = 5.5;
-	map.drawCircle_Float(curCircle.center, curCircle.radius);
+
+	if (floatMode == true)
+	{
+		map.drawCircle_float(curCircle.center, curCircle.radius, fillCircleFlag);
+	}
+	else
+	{
+		map.drawCircle_int(curCircle.center, (int)(ceil(curCircle.radius)), fillCircleFlag);
+	}
+
+	mapView.initCircle(curCircle);
 }
 
 GLuint tempTexture;
@@ -386,14 +402,67 @@ void DDARaycasting::update()
 						{
 							map.clearMap();
 							curCircle.radius = (int)(event.key.keysym.sym) - SDLK_0;
-							curCircle.radius += 0.5;
-							map.drawCircle_Float(curCircle.center, curCircle.radius);
+							curCircle.radius += FRACTIONAL_EDTRA_RADIUS;
+
+							if (floatMode == true)
+							{
+								map.drawCircle_float(curCircle.center, curCircle.radius, fillCircleFlag);
+							}
+							else
+							{
+								map.drawCircle_int(curCircle.center, (int)(ceil(curCircle.radius)), fillCircleFlag);
+							}
+							mapView.initCircle(curCircle);
 						}
 						break;		
 
 					case SDLK_q:
 						m_cameraZoom -= CAMERA_ZOOM_DELTA;
 						updateCamera();
+						break;
+
+					case SDLK_n:
+						floatMode = !floatMode;
+						break;
+
+					case SDLK_m:
+						addHalfRadiusFlag = !addHalfRadiusFlag;
+						if (addHalfRadiusFlag)
+						{
+							curCircle.radius = (int)curCircle.radius + FRACTIONAL_EDTRA_RADIUS;
+						}
+						else
+						{
+							curCircle.radius = (int)curCircle.radius;
+						}
+
+						map.clearMap();
+						if (floatMode == true)
+						{
+							map.drawCircle_float(curCircle.center, curCircle.radius, fillCircleFlag);
+						}
+						else
+						{
+							map.drawCircle_int(curCircle.center, (int)(ceil(curCircle.radius)), fillCircleFlag);
+						}
+						mapView.initCircle(curCircle);
+						break;
+
+					case SDLK_b:
+						fillCircleFlag = !fillCircleFlag;
+
+
+						map.clearMap();
+						if (floatMode == true)
+						{
+							map.drawCircle_float(curCircle.center, curCircle.radius, fillCircleFlag);
+						}
+						else
+						{
+							map.drawCircle_int(curCircle.center, (int)(ceil(curCircle.radius)), fillCircleFlag);
+						}
+						mapView.initCircle(curCircle);
+
 						break;
 
 					case SDLK_w:
@@ -427,7 +496,6 @@ void DDARaycasting::update()
 				switch (event.button.button)
 				{
 					case SDL_BUTTON_LEFT:
-						onMouseBtnDown();
 						break;
 
 					case SDL_BUTTON_RIGHT:
@@ -469,61 +537,11 @@ void DDARaycasting::update()
 }
 
 
-void DDARaycasting::resetDrawingMode()
-{
-	hasDrawnSource = false;
-	hasDrawnEnd = false;
-	mapView.resetHighlight();
-
-	sourcePoint.resetModel();
-	endPoint.resetModel();
-}
 
 
 void DDARaycasting::onMouseBtnUp()
 {
-	int tmpx, tmpy;
-	SDL_GetMouseState(&tmpx, &tmpy);
-	tmpy = utl::SCREEN_HEIGHT - tmpy;
 
-	if (inDrawingMode)
-	{
-		glm::vec2 screenPoint = glm::vec2(tmpx, tmpy);
-
-		glm::vec3 worldPoint = screenToWorldPoint(screenPoint);
-		glm::vec2 tempWorldPoint = glm::vec2(worldPoint.x, worldPoint.y);
-
-		if (hasDrawnSource == false)
-		{
-			source = tempWorldPoint;
-			hasDrawnSource = true;
-			currentRay = constructLine(source, source, 0.05);
-
-			sourcePoint = constructPoint(source, 0.1);
-		}
-		else
-		{
-			hasDrawnEnd = true;
-			end = tempWorldPoint;
-
-			UpdatingCurrentRayNewEndPoint(end);
-
-
-			endPoint = constructPoint(end, 0.5);
-
-			glm::vec2 dir = end - source;
-
-			Raycaster raycaster(source, dir, end, &map);
-			raycaster.traverse();
-
-			raycaster.printTraversal();
-
-			glm::vec2 endPoint = raycaster.traversal[raycaster.traversal.size() - 1];
-			traversalRay = constructLine(source, map.getCellCenter(endPoint), 0.05);
-
-			mapView.createMeshForGridCellsHighlight(raycaster.traversal);
-		}
-	}
 }
 
 
@@ -542,30 +560,6 @@ WorldObject DDARaycasting::constructPoint(glm::vec2 p, float width) const
 void DDARaycasting::onMouseBtnHold()
 {
 	changeCircleCenter();
-
-/*
-	int tmpx, tmpy;
-	SDL_GetMouseState(&tmpx, &tmpy);
-	tmpy = utl::SCREEN_HEIGHT - tmpy;
-
-	glm::vec2 screenPoint = glm::vec2(tmpx, tmpy);
-	glm::vec3 worldPoint = screenToWorldPoint(screenPoint);
-	glm::vec2 tempWorldPoint = glm::vec2(worldPoint.x, worldPoint.y);
-
-	UpdatingCurrentRayNewEndPoint(tempWorldPoint);
-	*/
-	}
-
-
-void DDARaycasting::onMouseBtnDown()
-{
-	if (inDrawingMode == true)
-	{
-		if (hasDrawnSource == true && hasDrawnEnd == true)
-		{
-			resetDrawingMode();
-		}
-	}
 }
 
 
@@ -582,31 +576,21 @@ void DDARaycasting::changeCircleCenter()
 	map.clearMap();
 	curCircle.center = center;
 
-	map.drawCircle_Float(curCircle.center, curCircle.radius);
+	if (floatMode == true)
+	{
+		map.drawCircle_float(curCircle.center, curCircle.radius, fillCircleFlag);
+	}
+	else
+	{
+		glm::vec2 gc = map.worldPos2GridCoord(curCircle.center);
+		curCircle.center = map.getCellCenter(gc);
+		map.drawCircle_int(curCircle.center, (int)(ceil(curCircle.radius)), fillCircleFlag);
+	}
+
+	mapView.initCircle(curCircle);
 }
 
 
-
-void DDARaycasting::UpdatingCurrentRayNewEndPoint(glm::vec2 end)
-{
-	glm::vec2 p0 = source;
-	glm::vec2 p1 = end;
-
-	glm::vec2 diffVector = p1 - p0;
-	glm::vec2 centerPoint = p0 + glm::vec2(diffVector.x / 2.0, diffVector.y / 2.0);
-
-	currentRay->setPosition(glm::vec3(centerPoint.x, centerPoint.y, 0));
-
-	float angle = atan2(diffVector.y, diffVector.x) * 180 / PI;
-
-	float length = glm::distance(p0, p1);
-
-	glm::vec3 scale(length, currentRay->getScale().y, 1);
-
-	currentRay->setRotation(glm::rotate(angle, 0.0f, 0.0f, 1.0f));
-
-	currentRay->setScale(scale);
-}
 
 
 
@@ -683,26 +667,6 @@ void DDARaycasting::render()
 	o_worldAxis.renderGroup(m_pipeline, p_renderer);
 	p_renderer->disableShader();
 
-	p_renderer = &global.rendererMgr->r_fullColor;
-	p_renderer->enableShader();
-	if (currentRay != NULL && currentRay->canRender())
-	{
-		p_renderer->setData(R_FULL_COLOR::u_color, COLOR_RED);
-		currentRay->renderGroup(m_pipeline, p_renderer);
-	}
-
-	if (sourcePoint.canRender())
-	{
-		p_renderer->setData(R_FULL_COLOR::u_color, COLOR_TEAL);
-		sourcePoint.renderGroup(m_pipeline, p_renderer);
-	}
-
-	if (endPoint.canRender())
-	{
-		p_renderer->setData(R_FULL_COLOR::u_color, COLOR_GREEN);
-		endPoint.renderGroup(m_pipeline, p_renderer);
-	}
-	p_renderer->disableShader();
 
 
 	long long timeNowMillis = getCurrentTimeMillis();
@@ -717,8 +681,9 @@ void DDARaycasting::render()
 
 	m_gui.setCircleCenter(curCircle.center);
 	m_gui.setCircleRadius(curCircle.radius);
-
-
+	m_gui.setFillFlag(fillCircleFlag);
+	m_gui.setHalfRadiusFlag(addHalfRadiusFlag);
+	m_gui.setFloatMode(floatMode);
 	m_gui.initGUIRenderingSetup();
 
 	glEnable(GL_BLEND);
@@ -733,11 +698,6 @@ void DDARaycasting::render()
 	frameNum++;
 }
 
-
-bool DDARaycasting::shouldRenderCurrentRay()
-{
-	return hasDrawnSource;
-}
 
 
 long long DDARaycasting::getCurrentTimeMillis()

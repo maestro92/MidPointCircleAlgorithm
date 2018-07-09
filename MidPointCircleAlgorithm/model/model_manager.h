@@ -56,6 +56,8 @@ class ModelManager
 			vector<VertexData>& vertices,
 			vector<unsigned int>& indices);
 
+		static void buildCircle(float radius, float thickness, vector<VertexData>& vertices, vector<unsigned int>& indices);
+
 	private:
 		Model* m_quad;
 		Model* m_centeredQuad;

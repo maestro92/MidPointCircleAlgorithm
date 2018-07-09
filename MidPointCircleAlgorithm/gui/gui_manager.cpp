@@ -49,22 +49,38 @@ void GUIManager::init(int screenWidth, int screenHeight)
 	xOffset = 0; yOffset = 0;
 	m_fpsLabel = new Label("90", xOffset, yOffset, 50, 50, COLOR_GRAY);
 
-	float width = 250;
+	float width = 100;
 	float height = 50;
-	xOffset = utl::SCREEN_WIDTH - 2 * width; 
+
+	xOffset = 100;
 	yOffset = 0;
+	m_circleRadiusLabel = new Label("", xOffset, yOffset, width, height, COLOR_WHITE);
+	m_circleRadiusLabel->setFont(15, COLOR_GREEN);
+	
+	xOffset = 250;
 	m_circleCenterLabel = new Label("", xOffset, yOffset, width, height, COLOR_WHITE);
 	m_circleCenterLabel->setFont(15, COLOR_GREEN);
 
-	xOffset = utl::SCREEN_WIDTH - width;
-	m_circleRadiusLabel = new Label("", xOffset, yOffset, width, height, COLOR_WHITE);
-	m_circleRadiusLabel->setFont(15, COLOR_GREEN);
+	xOffset = 400;
+	m_fillLabel = new Label("", xOffset, yOffset, width, height, COLOR_WHITE);
+	m_fillLabel->setFont(15, COLOR_GREEN);
+
+	xOffset = 550;
+	m_addHalfRadiusLabel = new Label("", xOffset, yOffset, width, height, COLOR_WHITE);
+	m_addHalfRadiusLabel->setFont(15, COLOR_GREEN);
+	
+	xOffset = 700;
+	m_floatModeLabel = new Label("", xOffset, yOffset, width, height, COLOR_WHITE);
+	m_floatModeLabel->setFont(15, COLOR_GREEN);
 
 
 	addGUIComponent(m_fpsLabel);
-	addGUIComponent(m_circleCenterLabel);
 	addGUIComponent(m_circleRadiusLabel);
 
+	addGUIComponent(m_circleCenterLabel);
+	addGUIComponent(m_fillLabel);
+	addGUIComponent(m_addHalfRadiusLabel);
+	addGUIComponent(m_floatModeLabel);
 
 	utl::debug("GUI manager initing");
 }
@@ -100,8 +116,52 @@ void GUIManager::setCircleRadius(float radius)
 	}
 }
 
+void GUIManager::setFillFlag(bool flag)
+{
+	if (m_fillLabel != NULL)
+	{
+		if (flag)
+		{
+			m_fillLabel->setText("Filled (b)");
+		}
+		else
+		{
+			m_fillLabel->setText("Not Filled (b)");
+		}
+	}
+}
+
+void GUIManager::setHalfRadiusFlag(bool flag)
+{
+	if (m_addHalfRadiusLabel != NULL)
+	{
+		if (flag)
+		{
+			m_addHalfRadiusLabel->setText("add 0.5 to radius (m)");
+		}
+		else
+		{
+			m_addHalfRadiusLabel->setText("without 0.5 radius (m)");
+		}
+	}
+}
 
 
+
+void GUIManager::setFloatMode(bool flag)
+{
+	if (m_floatModeLabel != NULL)
+	{
+		if (flag)
+		{
+			m_floatModeLabel->setText("float Mode (n)");
+		}
+		else
+		{
+			m_floatModeLabel->setText("not in float mode (n)");
+		}
+	}
+}
 void GUIManager::initGUIRenderingSetup()
 {
 	setupRenderToScreen(0, 0, m_screenWidth, m_screenHeight);

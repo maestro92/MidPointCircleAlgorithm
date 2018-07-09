@@ -1,5 +1,5 @@
 #include "model_manager.h"
-
+#include "utility_math.h"
 /*
 
 when working with models in blender
@@ -118,6 +118,29 @@ void ModelManager::buildLinesBetweenTwoPoints2D(glm::vec3 p0, glm::vec3 p1, floa
 	indices.push_back(indicesStart + 2);
 }
 
+
+void ModelManager::buildCircle(float radius, float thickness, vector<VertexData>& vertices, vector<unsigned int>& indices)
+{
+	for (float i = 0; i < 360; i += 0.5f)
+	{
+		//phys
+		float cos1 = cos(i * utl::DEGREE_TO_RADIAN);
+		float sin1 = sin(i * utl::DEGREE_TO_RADIAN);
+
+		float cos2 = cos( (i + 1) * utl::DEGREE_TO_RADIAN );
+		float sin2 = sin( (i + 1) * utl::DEGREE_TO_RADIAN );
+
+		float wx = radius * cos1;
+		float wy = radius * sin1;
+		glm::vec2 simPos0 = glm::vec2(wx, wy);
+
+		wx = radius * cos2;
+		wy = radius * sin2;
+		glm::vec2 simPos1 = glm::vec2(wx, wy);
+
+		buildLinesBetweenTwoPoints2D(simPos0, simPos1, thickness, vertices, indices);
+	}
+}
 
 
 

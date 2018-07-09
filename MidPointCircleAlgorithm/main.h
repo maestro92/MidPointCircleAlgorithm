@@ -36,7 +36,7 @@ class WorldObject;
 #include "renderer_manager.h"
 #include "renderer.h"
 #include "renderer_constants.h"
-
+#include "circle.h"
 
 #include "quad_model.h"
 #include "xyz_axis_model.h"
@@ -81,11 +81,6 @@ const int TIME_PROFILER_BUFFER = 10;
 const int FPS_PROFILER_BUFFER = 20;
 
 
-struct Circle
-{
-	glm::vec2 center;
-	float radius;
-};
 
 
 class DDARaycasting
@@ -142,23 +137,16 @@ class DDARaycasting
 
 		/// init functions
 		void init();
-		void initObjects();
 
 		void initGUI();
 
 		WorldObject* constructLine(glm::vec2 p0, glm::vec2 p1, float width) const;
-		WorldObject* constructTraversalCellOutlines(vector<glm::vec2> traversal);
-		void UpdatingCurrentRayNewEndPoint(glm::vec2 end);
 
 		int endWithError(char* msg, int error = 0);
  
 
 		void start();
 		void update();
-		bool inDrawingMode;
-
-		glm::vec2 source;
-		glm::vec2 end;
 
 		glm::vec3 screenToUISpace(glm::vec2 screenPoint);
 		glm::vec3 screenToWorldPoint(glm::vec2 screenPoint);
@@ -170,25 +158,15 @@ class DDARaycasting
 		void render();
 		void onMouseBtnUp();
 		void onMouseBtnHold();
-		void onMouseBtnDown();
 		void changeCircleCenter();
 
 		bool isChangingCircleCenter;
 
 		WorldObject constructPoint(glm::vec2 p, float width) const;
-		bool hasDrawnSource;
-		bool hasDrawnEnd;
 
-		bool shouldRenderCurrentRay();
-
-		void resetDrawingMode();
 		void GetTimeProfilerAverages();
 
-		WorldObject* currentRay;
-		WorldObject* traversalRay;
-
-		WorldObject sourcePoint;
-		WorldObject endPoint;
+		bool floatMode;
 
 		void renderGUI();
 		void updateCamera();
@@ -199,6 +177,9 @@ class DDARaycasting
 		vector<int> latencyOptions;		// round trip
 		int latency;					// rount trip latency in milliseconds
 		int curLatencyOption;
+
+		bool addHalfRadiusFlag;
+		bool fillCircleFlag;
 
 		long long getCurrentTimeMillis();
 };

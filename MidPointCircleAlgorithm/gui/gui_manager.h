@@ -46,9 +46,13 @@ class GUIManager
 		void setFPS(int FPS);
 		void setCircleCenter(glm::vec2 center);
 		void setCircleRadius(float radius);
-
+		void setFillFlag(bool flag);
+		void setHalfRadiusFlag(bool flag);
+		void setFloatMode(bool flag);
+		
 		void addDebugLabel(Control* control);
 		void removeDebugLabels();
+
 
 		Pipeline& getPipeline();
 
@@ -63,6 +67,10 @@ class GUIManager
 		Label* m_circleCenterLabel;	
 		Label* m_circleRadiusLabel;
 
+		Label* m_fillLabel;
+		Label* m_addHalfRadiusLabel;
+
+		Label* m_floatModeLabel;
 
 
         vector<Control*> m_GUIComponents;

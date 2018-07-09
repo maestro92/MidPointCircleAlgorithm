@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <iostream>
 #include <fstream>
-
+#include "gridcoord.h"
 using namespace std;
 
 
@@ -37,7 +37,7 @@ class Map
 		Cell getCell(glm::vec2 coord);
 		Cell getCell(int x, int y);
 		void setCell(int x, int y, Map::Cell gem);
-
+		void setCell(GridCoord gc, Map::Cell gem);
 		void setCell_Float(float x, float y, Map::Cell gem);
 
 		void save();
@@ -47,9 +47,15 @@ class Map
 		void debugVisitedFlags();
 //		void drawCircle(glm::vec2 center, int radius);
 
-		void drawCircle_int(glm::vec2 center, int radius);
-		void drawCircle_Float(glm::vec2 center, float radius);
+		void drawCircle_int(glm::vec2 center, int radius, bool fill);
+		void drawCircleOutline_int(glm::vec2 center, int radius);
+		void fillCircle_int(glm::vec2 center, float radius);
+		void fillLine_int(int x0, int x1, int y, Map::Cell gem);
 
+		void drawCircle_float(glm::vec2 center, float radius, bool fill);
+		void drawCircleOutline_float(glm::vec2 center, float radius);
+		void fillCircle_float(glm::vec2 center, float radius);
+		void fillLine_float(float x0, float x1, float y, Map::Cell gem);
 		void resetFlags();
 
 		bool saveLatest;

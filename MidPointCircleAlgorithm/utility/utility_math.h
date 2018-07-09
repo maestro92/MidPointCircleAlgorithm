@@ -13,6 +13,12 @@ namespace utl
 
 //	static const float MATH_EPSILON;
 	/// utl_Math.cpp
+
+
+	const float DEGREE_TO_RADIAN = 0.0174;    /// pi/180
+	const float RADIAN_TO_DEGREE = 57.32;     /// 180/pi
+
+
 	string intToStr(int value);
 	string floatToStr(float value);
 	string vec2ToStr(glm::vec2 value);

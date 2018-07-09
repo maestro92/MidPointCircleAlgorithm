@@ -7,6 +7,8 @@
 #include "model_manager.h"
 #include "renderer.h"
 #include "renderer_manager.h"
+#include "circle.h"
+#include "gridcoord.h"
 
 class MapView
 {
@@ -15,10 +17,8 @@ class MapView
 		void initGridLines();
 		void render(Pipeline& p);
 		void reset();
-		
+		void initCircle(Circle circle);
 		void createMeshForGridCellsHighlight(vector<glm::vec2> traversal);
-		void renderHighlight(Pipeline& p);
-		void resetHighlight();
 		WorldObject& getWorldObject(int x, int y);
 
 	private:
@@ -32,8 +32,9 @@ class MapView
 		WorldObject gridLines;
 
 		Model* circleModel;
-		WorldObject circle;
+		WorldObject circleGameObject;
 
+		WorldObject cirlceCenterGameObject;
 };
 
 

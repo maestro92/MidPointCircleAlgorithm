@@ -200,7 +200,22 @@ void Map::drawCircle(glm::vec2 center, int radius)
 */
 
 // https://www.youtube.com/watch?v=QeOvZTYlmAI&t=607s
-void Map::drawCircle_int(glm::vec2 center, int radius)
+void Map::drawCircle_int(glm::vec2 center, int radius, bool fill)
+{
+	if (fill)
+	{
+		fillCircle_int(center, radius);
+	}
+	else
+	{
+		drawCircleOutline_int(center, radius);
+	}
+}
+
+
+
+// https://www.youtube.com/watch?v=QeOvZTYlmAI&t=607s
+void Map::drawCircleOutline_int(glm::vec2 center, int radius)
 {
 	int x0 = center.x;
 	int y0 = center.y;
@@ -234,8 +249,67 @@ void Map::drawCircle_int(glm::vec2 center, int radius)
 }
 
 
+void Map::fillCircle_int(glm::vec2 center, float radius)
+{
+	int x0 = center.x;
+	int y0 = center.y;
 
-void Map::drawCircle_Float(glm::vec2 center, float radius)
+	int x = 0;
+	int y = radius;
+	int err = 1 - radius;
+
+	while (y >= x)
+	{
+		fillLine_int(x0 - x, x0 + x, y0 + y, Map::Cell::Wall);
+		fillLine_int(x0 - y, x0 + y, y0 + x, Map::Cell::Wall);
+		fillLine_int(x0 - x, x0 + x, y0 - y, Map::Cell::Wall);
+		fillLine_int(x0 - y, x0 + y, y0 - x, Map::Cell::Wall);
+
+		if (err <= 0)
+		{
+			err = err + 2 * x + 3;
+		}
+		else
+		{
+			err = err + 2 * (x - y) + 5;
+			y--;
+		}
+		x++;
+	}
+}
+
+
+
+void Map::fillLine_int(int x0, int x1, int y, Map::Cell gem)
+{
+	for (int x = x0; x <= x1; x++)
+	{
+		if (IsValidRange(glm::vec2(x, y)))
+		{
+			gridmap[y][x] = gem;
+		}
+	}
+}
+
+
+
+
+void Map::drawCircle_float(glm::vec2 center, float radius, bool fill)
+{
+	if (fill)
+	{
+		fillCircle_float(center, radius);
+	}
+	else
+	{
+		drawCircleOutline_float(center, radius);
+	}
+}
+
+
+
+
+void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 {
 	float x0 = center.x;
 	float y0 = center.y;
@@ -244,16 +318,262 @@ void Map::drawCircle_Float(glm::vec2 center, float radius)
 	float y = radius;
 	float err = 1.25 - radius;
 
-	while (y >= x)
+	glm::vec2 q1_g0;
+	glm::vec2 q1_g1;
+
+	glm::vec2 q2_g0;
+	glm::vec2 q2_g1;
+
+	glm::vec2 q3_g0;
+	glm::vec2 q3_g1;
+
+	glm::vec2 q4_g0;
+	glm::vec2 q4_g1;
+
+
+	// need to the examine the 
+	while ( (int)y >= (int)x) 
+	{					
+	/*
+							
+
+			q2_g0	|	q1_g0
+					|	
+		q2_g1		|		q1_g1
+		____________|___________
+					|
+		q3_g1		|		q4_g1
+					|
+			q3_g0	|	q4_g0
+
+	*/
+
+		q1_g0 = glm::vec2((int)(x0 + x), (int)(y0 + y));
+		q1_g1 = glm::vec2((int)(x0 + y), (int)(y0 + x));
+		
+		q2_g0 = glm::vec2((int)(x0 - x), (int)(y0 + y));
+		q2_g1 = glm::vec2((int)(x0 - y), (int)(y0 + x));
+
+		q3_g0 = glm::vec2((int)(x0 - x), (int)(y0 - y));
+		q3_g1 = glm::vec2((int)(x0 - y), (int)(y0 - x));
+
+		q4_g0 = glm::vec2((int)(x0 + x), (int)(y0 - y));
+		q4_g1 = glm::vec2((int)(x0 + y), (int)(y0 - x));
+
+
+		// first quadrant;
+		setCell(x0 + x, y0 + y, Map::Cell::Wall);
+		setCell(x0 + y, y0 + x, Map::Cell::Wall);
+		
+		// second quadant
+		setCell(x0 - x, y0 + y, Map::Cell::Wall);
+		setCell(x0 - y, y0 + x, Map::Cell::Wall);
+
+		// third quadant
+		setCell(x0 - x, y0 - y, Map::Cell::Wall);
+		setCell(x0 - y, y0 - x, Map::Cell::Wall);
+
+		// fourth quadrant
+		setCell(x0 + y, y0 - x, Map::Cell::Wall);
+		setCell(x0 + x, y0 - y, Map::Cell::Wall);
+		
+		// if the error function is less than zero, we only increment x
+		if (err <= 0)
+		{
+			err = err + 2 * x + 3;
+		}
+		else
+		{
+			err = err + 2 * (x - y) + 5;
+			y--;
+		}
+		x++;
+	}
+	
+	// first quardant
+	int gx = q1_g0.x;
+	int gy = q1_g0.y;
+	if (q1_g1.x - q1_g0.x > 1)
 	{
-		setCell_Float(x0 + x, y0 + y, Map::Cell::Wall);
-		setCell_Float(x0 + y, y0 + x, Map::Cell::Wall);
-		setCell_Float(x0 - y, y0 + x, Map::Cell::Wall);
-		setCell_Float(x0 - x, y0 + y, Map::Cell::Wall);
-		setCell_Float(x0 - x, y0 - y, Map::Cell::Wall);
-		setCell_Float(x0 - y, y0 - x, Map::Cell::Wall);
-		setCell_Float(x0 + y, y0 - x, Map::Cell::Wall);
-		setCell_Float(x0 + x, y0 - y, Map::Cell::Wall);
+		gx = q1_g0.x + 1;
+ 	}
+
+	if (q1_g0.y - q1_g1.y > 1)
+	{
+		gy = q1_g0.y - 1;
+	}
+	setCell_Float(gx, gy, Map::Cell::Wall);
+	
+
+	// 2nd quadrant
+	gx = q2_g0.x;
+	gy = q2_g0.y;
+	if ( (q2_g0.x - q2_g1.x) > 1)
+	{
+		gx = q2_g0.x - 1;
+	}
+	if ( (q2_g0.y - q2_g1.y) > 1)
+	{
+		gy = q2_g0.y - 1;
+	}
+	
+	setCell_Float(gx, gy, Map::Cell::Wall);
+
+	
+	// 3rd quadrant
+	gx = q3_g0.x;
+	gy = q3_g0.y;
+	if ((q3_g1.y - q3_g0.y) > 1)
+	{
+		gy = q3_g0.y + 1;
+	}
+
+	if ( (q3_g0.x - q3_g1.x) > 1)
+	{
+		gx = q3_g0.x - 1;
+	}
+	setCell_Float(gx, gy, Map::Cell::Wall);
+
+	
+	// 4th quadrant
+	gx = q4_g0.x;
+	gy = q4_g0.y;
+	if ( (q4_g1.y - q4_g0.y) > 1)
+	{
+		gy = q4_g0.y + 1;
+	}
+
+	if ( (q4_g1.x - q4_g0.x) > 1)
+	{
+		gx = q4_g0.x + 1;
+	}
+	setCell_Float(gx, gy, Map::Cell::Wall);
+}
+
+
+
+void Map::fillCircle_float(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	float x = 0;
+	float y = radius;
+	float err = 1.25 - radius;
+
+	GridCoord q1_g0, q1_g1, q2_g0, q2_g1, q3_g0, q3_g1, q4_g0, q4_g1;
+
+	// need to the examine the 
+	while ((int)y >= (int)x)
+	{
+		q1_g0 = GridCoord((int)(x0 + x), (int)(y0 + y));
+		q1_g1 = GridCoord((int)(x0 + y), (int)(y0 + x));
+
+		q2_g0 = GridCoord((int)(x0 - x), (int)(y0 + y));
+		q2_g1 = GridCoord((int)(x0 - y), (int)(y0 + x));
+
+		q3_g0 = GridCoord((int)(x0 - x), (int)(y0 - y));
+		q3_g1 = GridCoord((int)(x0 - y), (int)(y0 - x));
+
+		q4_g0 = GridCoord((int)(x0 + x), (int)(y0 - y));
+		q4_g1 = GridCoord((int)(x0 + y), (int)(y0 - x));
+
+		fillLine_int((int)(x0 - x), (int)(x0 + x), (int)(y0 + y), Map::Cell::Wall);
+		fillLine_int((int)(x0 - x), (int)(x0 + x), (int)(y0 - y), Map::Cell::Wall);
+		fillLine_int((int)(x0 - y), (int)(x0 + y), (int)(y0 - x), Map::Cell::Wall);
+		fillLine_int((int)(x0 - y), (int)(x0 + y), (int)(y0 + x), Map::Cell::Wall);
+
+		// if the error function is less than zero, we only increment x
+		if (err <= 0)
+		{
+			err = err + 2 * x + 3;
+		}
+		else
+		{
+			err = err + 2 * (x - y) + 5;
+			y--;
+		}
+		x++;
+	}
+
+	// first quardant
+	int gx1 = q1_g0.x;
+	int gy1 = q1_g0.y;
+	if (q1_g1.x - q1_g0.x > 1)
+	{
+		gx1 = q1_g0.x + 1;
+	}
+
+	if (q1_g0.y - q1_g1.y > 1)
+	{
+		gy1 = q1_g0.y - 1;
+	}
+
+
+	// 2nd quadrant
+	int gx2 = q2_g0.x;
+	int gy2 = q2_g0.y;
+	if ((q2_g0.x - q2_g1.x) > 1)
+	{
+		gx2 = q2_g0.x - 1;
+	}
+	if ((q2_g0.y - q2_g1.y) > 1)
+	{
+		gy2 = q2_g0.y - 1;
+	}
+	fillLine_int(gx2, gx1, gy1, Map::Cell::Wall);
+
+
+	// 3rd quadrant
+	int gx3 = q3_g0.x;
+	int gy3 = q3_g0.y;
+	if ((q3_g1.y - q3_g0.y) > 1)
+	{
+		gy3 = q3_g0.y + 1;
+	}
+
+	if ((q3_g0.x - q3_g1.x) > 1)
+	{
+		gx3 = q3_g0.x - 1;
+	}
+
+
+
+	// 4th quadrant
+	int gx4 = q4_g0.x;
+	int gy4 = q4_g0.y;
+	if ((q4_g1.y - q4_g0.y) > 1)
+	{
+		gy4 = q4_g0.y + 1;
+	}
+
+	if ((q4_g1.x - q4_g0.x) > 1)
+	{
+		gx4 = q4_g0.x + 1;
+	}
+	fillLine_int(gx3, gx4, gy4, Map::Cell::Wall);
+
+}
+
+/*
+void Map::fillCircle_float(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	float x = 0;
+	float y = radius;
+	float err = 1.25 - radius;
+
+	// to compensate for non-symmetry
+	// sometimes, there is no symmetry, so we do an extra iteration to make up for it
+	//	while (y >= x)
+	while (y >= (x - 1))
+	{
+		fillLine_float(x0 - x, x0 + x, y0 + y, Map::Cell::Wall);
+		fillLine_float(x0 - y, x0 + y, y0 + x, Map::Cell::Wall);
+		fillLine_float(x0 - x, x0 + x, y0 - y, Map::Cell::Wall);
+		fillLine_float(x0 - y, x0 + y, y0 - x, Map::Cell::Wall);
 
 		// if the error function is less than zero, we only increment x
 		if (err <= 0)
@@ -268,7 +588,23 @@ void Map::drawCircle_Float(glm::vec2 center, float radius)
 		x++;
 	}
 }
+*/
 
+void Map::fillLine_float(float x0, float x1, float y, Map::Cell gem)
+{
+	int gy = (int)y;
+
+	int gx0 = (int)x0;
+	int gx1 = (int)x1;
+
+	for (float gx = gx0; gx <= gx1; gx++)
+	{
+		if (IsValidRange(glm::vec2(gx, gy)))
+		{
+			gridmap[gy][gx] = gem;
+		}
+	}
+}
 
 
 void Map::save()
@@ -308,6 +644,13 @@ void Map::setCell(int x, int y, Map::Cell gem)
 	}
 }
 
+void Map::setCell(GridCoord gc, Map::Cell gem)
+{
+	if (IsValidRange(glm::vec2(gc.x, gc.y)))
+	{
+		gridmap[gc.y][gc.x] = gem;
+	}
+}
 
 void Map::setCell_Float(float x, float y, Map::Cell gem)
 {
