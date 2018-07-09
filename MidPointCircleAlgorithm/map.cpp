@@ -128,14 +128,14 @@ float Map::getCellSize()
 
 // http://www.cplusplus.com/forum/beginner/60827/
 // c++ truncates, aka rounds down
-glm::vec2 Map::worldPos2GridCoord(glm::vec2 pos)
+glm::ivec2 Map::worldPos2GridCoord(glm::vec2 pos)
 {
-	return glm::vec2(static_cast<int>(pos.x), static_cast<int>(pos.y));
+	return glm::ivec2(static_cast<int>(pos.x), static_cast<int>(pos.y));
 }
 
-glm::vec2 Map::gridCoord2WorldPos(glm::vec2 gridCoord)
+glm::vec2 Map::gridCoord2WorldPos(glm::ivec2 gridCoord)
 {
-	return gridCoord;
+	return getCellCenter(gridCoord);
 }
 
 glm::vec2 Map::getCellMinCorner(glm::vec2 gridCoord)
@@ -151,9 +151,9 @@ glm::vec2 Map::getCellMaxCorner(glm::vec2 gridCoord)
 	return pos;
 }
 
-glm::vec2 Map::getCellCenter(glm::vec2 gridCoord)
+glm::vec2 Map::getCellCenter(glm::ivec2 gridCoord)
 {
-	glm::vec2 pos = gridCoord;
+	glm::vec2 pos = glm::vec2((int)gridCoord.x, (int)gridCoord.y);
 	pos.x += m_cellSize / 2;
 	pos.y += m_cellSize / 2;
 	return pos;
@@ -314,9 +314,15 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	float x0 = center.x;
 	float y0 = center.y;
 
+	glm::ivec2 centerGc = worldPos2GridCoord(center);
+	glm::vec2 cellCenter = getCellCenter(centerGc);
+
+	glm::vec2 dCenter = center - cellCenter;
+
 	float x = 0;
 	float y = radius;
 	float err = 1.25 - radius;
+
 
 	glm::vec2 q1_g0;
 	glm::vec2 q1_g1;
@@ -330,6 +336,21 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	glm::vec2 q4_g0;
 	glm::vec2 q4_g1;
 
+
+	int minX = center.x - radius;
+	int maxX = center.x + radius;
+
+	int centerX = center.x;
+	int centerY = center.y;
+
+	int minY = center.y - radius;
+	int maxY = center.y + radius;
+
+	int max2centerX = maxX - centerX;
+	int min2centerX = centerX - minX;
+
+	int max2centerY = maxY - centerY;
+	int min2centerY = centerY - minY;
 
 	// need to the examine the 
 	while ( (int)y >= (int)x) 
@@ -378,6 +399,10 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 		setCell(x0 + x, y0 - y, Map::Cell::Wall);
 		
 		// if the error function is less than zero, we only increment x
+		// each pixel, we have two mult, two add
+		// we can do better  (check page 19, 20)
+		// http://alamos.math.arizona.edu/~rychlik/CourseDir/535/resources/LineDrawing.pdf
+
 		if (err <= 0)
 		{
 			err = err + 2 * x + 3;
@@ -393,14 +418,26 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	// first quardant
 	int gx = q1_g0.x;
 	int gy = q1_g0.y;
-	if (q1_g1.x - q1_g0.x > 1)
+
+	bool dx = q1_g1.x - q1_g0.x > 1;
+	bool dy = q1_g0.y - q1_g1.y > 1;
+
+	if (dx && dy)
 	{
 		gx = q1_g0.x + 1;
- 	}
-
-	if (q1_g0.y - q1_g1.y > 1)
+		gy = q1_g0.y - 1;
+	}
+	else if (dy)
 	{
 		gy = q1_g0.y - 1;
+		if (max2centerY > max2centerX)
+		{
+			gx++;
+		}
+	}	
+	else if (dx)
+	{
+		gx = q1_g0.x + 1;
 	}
 	setCell_Float(gx, gy, Map::Cell::Wall);
 	
@@ -408,13 +445,25 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	// 2nd quadrant
 	gx = q2_g0.x;
 	gy = q2_g0.y;
-	if ( (q2_g0.x - q2_g1.x) > 1)
+	dx = (q2_g0.x - q2_g1.x) > 1;
+	dy = (q2_g0.y - q2_g1.y) > 1;
+
+	if (dx && dy)
 	{
 		gx = q2_g0.x - 1;
+		gy = q2_g0.y - 1;
 	}
-	if ( (q2_g0.y - q2_g1.y) > 1)
+	else if (dy)
 	{
 		gy = q2_g0.y - 1;
+		if (max2centerY > min2centerX)
+		{
+			gx--;
+		}
+	}
+	else if (dx)
+	{
+		gx = q2_g0.x - 1;
 	}
 	
 	setCell_Float(gx, gy, Map::Cell::Wall);
@@ -423,12 +472,23 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	// 3rd quadrant
 	gx = q3_g0.x;
 	gy = q3_g0.y;
-	if ((q3_g1.y - q3_g0.y) > 1)
+	dy = (q3_g1.y - q3_g0.y) > 1;
+	dx = (q3_g0.x - q3_g1.x) > 1;
+
+	if (dx && dy)
 	{
+		gx = q3_g0.x - 1;
 		gy = q3_g0.y + 1;
 	}
-
-	if ( (q3_g0.x - q3_g1.x) > 1)
+	else if (dy)
+	{
+		gy = q3_g0.y + 1;
+		if (min2centerY > min2centerX)
+		{
+			gx--;
+		}
+	}
+	else if (dx)
 	{
 		gx = q3_g0.x - 1;
 	}
@@ -438,12 +498,23 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	// 4th quadrant
 	gx = q4_g0.x;
 	gy = q4_g0.y;
-	if ( (q4_g1.y - q4_g0.y) > 1)
+	dy = (q4_g1.y - q4_g0.y) > 1;
+	dx = (q4_g1.x - q4_g0.x) > 1;
+
+	if (dx && dy)
 	{
 		gy = q4_g0.y + 1;
+		gx = q4_g0.x + 1;
 	}
-
-	if ( (q4_g1.x - q4_g0.x) > 1)
+	else if (dy)
+	{
+		gy = q4_g0.y + 1;
+		if (min2centerY > max2centerX)
+		{
+			gx++;
+		}
+	}
+	else if (dx)
 	{
 		gx = q4_g0.x + 1;
 	}
@@ -457,26 +528,42 @@ void Map::fillCircle_float(glm::vec2 center, float radius)
 	float x0 = center.x;
 	float y0 = center.y;
 
+	int minX = center.x - radius;
+	int maxX = center.x + radius;
+
+	int centerX = center.x;
+	int centerY = center.y;
+
+	int minY = center.y - radius;
+	int maxY = center.y + radius;
+
+	int max2centerX = maxX - centerX;
+	int min2centerX = centerX - minX;
+
+	int max2centerY = maxY - centerY;
+	int min2centerY = centerY - minY;
+
+
 	float x = 0;
 	float y = radius;
 	float err = 1.25 - radius;
-
-	GridCoord q1_g0, q1_g1, q2_g0, q2_g1, q3_g0, q3_g1, q4_g0, q4_g1;
+	
+	glm::ivec2 q1_g0, q1_g1, q2_g0, q2_g1, q3_g0, q3_g1, q4_g0, q4_g1;
 
 	// need to the examine the 
 	while ((int)y >= (int)x)
 	{
-		q1_g0 = GridCoord((int)(x0 + x), (int)(y0 + y));
-		q1_g1 = GridCoord((int)(x0 + y), (int)(y0 + x));
+		q1_g0 = glm::ivec2((int)(x0 + x), (int)(y0 + y));
+		q1_g1 = glm::ivec2((int)(x0 + y), (int)(y0 + x));
 
-		q2_g0 = GridCoord((int)(x0 - x), (int)(y0 + y));
-		q2_g1 = GridCoord((int)(x0 - y), (int)(y0 + x));
+		q2_g0 = glm::ivec2((int)(x0 - x), (int)(y0 + y));
+		q2_g1 = glm::ivec2((int)(x0 - y), (int)(y0 + x));
 
-		q3_g0 = GridCoord((int)(x0 - x), (int)(y0 - y));
-		q3_g1 = GridCoord((int)(x0 - y), (int)(y0 - x));
+		q3_g0 = glm::ivec2((int)(x0 - x), (int)(y0 - y));
+		q3_g1 = glm::ivec2((int)(x0 - y), (int)(y0 - x));
 
-		q4_g0 = GridCoord((int)(x0 + x), (int)(y0 - y));
-		q4_g1 = GridCoord((int)(x0 + y), (int)(y0 - x));
+		q4_g0 = glm::ivec2((int)(x0 + x), (int)(y0 - y));
+		q4_g1 = glm::ivec2((int)(x0 + y), (int)(y0 - x));
 
 		fillLine_int((int)(x0 - x), (int)(x0 + x), (int)(y0 + y), Map::Cell::Wall);
 		fillLine_int((int)(x0 - x), (int)(x0 + x), (int)(y0 - y), Map::Cell::Wall);
@@ -499,27 +586,49 @@ void Map::fillCircle_float(glm::vec2 center, float radius)
 	// first quardant
 	int gx1 = q1_g0.x;
 	int gy1 = q1_g0.y;
-	if (q1_g1.x - q1_g0.x > 1)
+	bool dx = q1_g1.x - q1_g0.x > 1;
+	bool dy = q1_g0.y - q1_g1.y > 1;
+
+	if (dx && dy)
+	{
+		gx1 = q1_g0.x + 1;
+		gy1 = q1_g0.y - 1;
+	}
+	else if (dy)
+	{
+		gy1 = q1_g0.y - 1;
+		if (max2centerY > max2centerX)
+		{
+			gx1++;
+		}
+	}
+	else if (dx)
 	{
 		gx1 = q1_g0.x + 1;
 	}
 
-	if (q1_g0.y - q1_g1.y > 1)
-	{
-		gy1 = q1_g0.y - 1;
-	}
-
-
 	// 2nd quadrant
 	int gx2 = q2_g0.x;
 	int gy2 = q2_g0.y;
-	if ((q2_g0.x - q2_g1.x) > 1)
+	dx = (q2_g0.x - q2_g1.x) > 1;
+	dy = (q2_g0.y - q2_g1.y) > 1;
+
+	if (dx && dy)
 	{
 		gx2 = q2_g0.x - 1;
+		gy2 = q2_g0.y - 1;
 	}
-	if ((q2_g0.y - q2_g1.y) > 1)
+	else if (dy)
 	{
 		gy2 = q2_g0.y - 1;
+		if (max2centerY > min2centerX)
+		{
+			gx2--;
+		}
+	}
+	else if (dx)
+	{
+		gx2 = q2_g0.x - 1;
 	}
 	fillLine_int(gx2, gx1, gy1, Map::Cell::Wall);
 
@@ -527,30 +636,55 @@ void Map::fillCircle_float(glm::vec2 center, float radius)
 	// 3rd quadrant
 	int gx3 = q3_g0.x;
 	int gy3 = q3_g0.y;
-	if ((q3_g1.y - q3_g0.y) > 1)
+
+	dy = (q3_g1.y - q3_g0.y) > 1;
+	dx = (q3_g0.x - q3_g1.x) > 1;
+
+	if (dx && dy)
 	{
+		gx3 = q3_g0.x - 1;
 		gy3 = q3_g0.y + 1;
 	}
-
-	if ((q3_g0.x - q3_g1.x) > 1)
+	else if (dy)
+	{
+		gy3 = q3_g0.y + 1;
+		if (min2centerY > min2centerX)
+		{
+			gx3--;
+		}
+	}
+	else if (dx)
 	{
 		gx3 = q3_g0.x - 1;
 	}
 
 
 
+
 	// 4th quadrant
 	int gx4 = q4_g0.x;
 	int gy4 = q4_g0.y;
-	if ((q4_g1.y - q4_g0.y) > 1)
+	dy = (q4_g1.y - q4_g0.y) > 1;
+	dx = (q4_g1.x - q4_g0.x) > 1;
+
+	if (dx && dy)
 	{
 		gy4 = q4_g0.y + 1;
+		gx4 = q4_g0.x + 1;
 	}
-
-	if ((q4_g1.x - q4_g0.x) > 1)
+	else if (dy)
+	{
+		gy4 = q4_g0.y + 1;
+		if (min2centerY > max2centerX)
+		{
+			gx4++;
+		}
+	}
+	else if (dx)
 	{
 		gx4 = q4_g0.x + 1;
 	}
+
 	fillLine_int(gx3, gx4, gy4, Map::Cell::Wall);
 
 }
@@ -644,7 +778,7 @@ void Map::setCell(int x, int y, Map::Cell gem)
 	}
 }
 
-void Map::setCell(GridCoord gc, Map::Cell gem)
+void Map::setCell(glm::ivec2 gc, Map::Cell gem)
 {
 	if (IsValidRange(glm::vec2(gc.x, gc.y)))
 	{

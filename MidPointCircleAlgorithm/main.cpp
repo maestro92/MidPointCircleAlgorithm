@@ -70,7 +70,7 @@ const int SERVER_SNAPSHOT_TIME_STEP = 1000 / SERVER_SNAPSHOT_PER_SECOND;
 const int CLIENT_INPUT_SENT_PER_SECOND = 33;
 const int CLIENT_INPUT_SENT_TIME_STEP = 1000 / SERVER_SNAPSHOT_PER_SECOND;
 
-const float FRACTIONAL_EDTRA_RADIUS = 0.25f;
+const float FRACTIONAL_EDTRA_RADIUS = 0.75f;
 
 
 const float SPAWN_POSITION_UNIT_OFFSET = 40.0f;
@@ -582,7 +582,7 @@ void DDARaycasting::changeCircleCenter()
 	}
 	else
 	{
-		glm::vec2 gc = map.worldPos2GridCoord(curCircle.center);
+		glm::ivec2 gc = map.worldPos2GridCoord(curCircle.center);
 		curCircle.center = map.getCellCenter(gc);
 		map.drawCircle_int(curCircle.center, (int)(ceil(curCircle.radius)), fillCircleFlag);
 	}

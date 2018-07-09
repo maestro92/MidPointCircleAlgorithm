@@ -8,7 +8,7 @@
 #include "renderer.h"
 #include "renderer_manager.h"
 #include "circle.h"
-#include "gridcoord.h"
+
 
 class MapView
 {

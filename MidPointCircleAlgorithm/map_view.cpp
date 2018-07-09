@@ -16,7 +16,7 @@ void MapView::init(Map* map)
 			WorldObject obj = WorldObject();
 			obj.setModel(global.modelMgr->get(ModelEnum::centeredQuad));
 
-			glm::vec2 pos = map->getCellCenter(glm::vec2(x, y));
+			glm::vec2 pos = map->getCellCenter(glm::ivec2(x, y));
 
 			obj.setPosition(glm::vec3(pos.x, pos.y, 0));
 

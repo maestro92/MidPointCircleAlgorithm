@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <iostream>
 #include <fstream>
-#include "gridcoord.h"
 using namespace std;
 
 
@@ -37,7 +36,7 @@ class Map
 		Cell getCell(glm::vec2 coord);
 		Cell getCell(int x, int y);
 		void setCell(int x, int y, Map::Cell gem);
-		void setCell(GridCoord gc, Map::Cell gem);
+		void setCell(glm::ivec2 gc, Map::Cell gem);
 		void setCell_Float(float x, float y, Map::Cell gem);
 
 		void save();
@@ -60,11 +59,11 @@ class Map
 
 		bool saveLatest;
 
-		glm::vec2 worldPos2GridCoord(glm::vec2 pos);
-		glm::vec2 gridCoord2WorldPos(glm::vec2 gridCoord);
+		glm::ivec2 worldPos2GridCoord(glm::vec2 pos);
+		glm::vec2 gridCoord2WorldPos(glm::ivec2 gridCoord);
 		glm::vec2 getCellMinCorner(glm::vec2 gridCoord);
 		glm::vec2 getCellMaxCorner(glm::vec2 gridCoord);
-		glm::vec2 getCellCenter(glm::vec2 gridCoord);
+		glm::vec2 getCellCenter(glm::ivec2 gridCoord);
 
 		float getCellSize();
 		bool IsValidRange(glm::vec2 coord);

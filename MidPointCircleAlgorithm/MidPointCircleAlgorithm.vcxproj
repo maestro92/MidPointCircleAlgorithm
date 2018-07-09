@@ -130,7 +130,6 @@
     <ClInclude Include="circle.h" />
     <ClInclude Include="client_server\client_server_enums.h" />
     <ClInclude Include="client_server\client_server_packets.h" />
-    <ClInclude Include="gridcoord.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="map_view.h" />
     <ClInclude Include="global.h" />
