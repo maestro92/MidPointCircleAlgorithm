@@ -53,16 +53,31 @@ class Map
 
 		void drawCircle_float(glm::vec2 center, float radius, bool fill);
 		void drawCircleOutline_float(glm::vec2 center, float radius);
+		
+		void drawCircleOutline_float_oct1(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct2(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct3(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct4(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct5(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct6(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct7(glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct8(glm::vec2 center, float radius);
+		void drawCircleOutline_float_traverseY2X(int x, int y, glm::vec2 center, float err, int xSign, int ySign);
+
+
+		void drawCircleOutline_float_traverseX2Y(int x, int y, glm::vec2 center, float err, int xSign, int ySign);
+
 		void fillCircle_float(glm::vec2 center, float radius);
 		void fillLine_float(float x0, float x1, float y, Map::Cell gem);
 		void resetFlags();
+
 
 		bool saveLatest;
 
 		glm::ivec2 worldPos2GridCoord(glm::vec2 pos);
 		glm::vec2 gridCoord2WorldPos(glm::ivec2 gridCoord);
-		glm::vec2 getCellMinCorner(glm::vec2 gridCoord);
-		glm::vec2 getCellMaxCorner(glm::vec2 gridCoord);
+		glm::vec2 getCellMinCorner(glm::ivec2 gridCoord);
+		glm::vec2 getCellMaxCorner(glm::ivec2 gridCoord);
 		glm::vec2 getCellCenter(glm::ivec2 gridCoord);
 
 		float getCellSize();

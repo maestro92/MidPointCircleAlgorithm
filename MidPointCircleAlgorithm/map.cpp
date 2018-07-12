@@ -138,14 +138,14 @@ glm::vec2 Map::gridCoord2WorldPos(glm::ivec2 gridCoord)
 	return getCellCenter(gridCoord);
 }
 
-glm::vec2 Map::getCellMinCorner(glm::vec2 gridCoord)
+glm::vec2 Map::getCellMinCorner(glm::ivec2 gridCoord)
 {
-	return gridCoord;
+	return glm::vec2(gridCoord.x, gridCoord.y);
 }
 
-glm::vec2 Map::getCellMaxCorner(glm::vec2 gridCoord)
+glm::vec2 Map::getCellMaxCorner(glm::ivec2 gridCoord)
 {
-	glm::vec2 pos = gridCoord;
+	glm::vec2 pos = glm::vec2(gridCoord.x, gridCoord.y);
 	pos.x += m_cellSize;
 	pos.y += m_cellSize;
 	return pos;
@@ -307,8 +307,357 @@ void Map::drawCircle_float(glm::vec2 center, float radius, bool fill)
 }
 
 
+/*
+			oct8	|	oct1
+					|	
+		oct7		|		oct2
+		____________|___________
+					|
+		oct6		|		oct3
+					|
+			oct5	|	oct4
+*/
+void Map::drawCircleOutline_float(glm::vec2 center, float radius)
+{
+	drawCircleOutline_float_oct1(center, radius);
+	drawCircleOutline_float_oct2(center, radius);
+	drawCircleOutline_float_oct3(center, radius);
+	drawCircleOutline_float_oct4(center, radius);
+	drawCircleOutline_float_oct5(center, radius);
+	drawCircleOutline_float_oct6(center, radius);
+	drawCircleOutline_float_oct7(center, radius);
+	drawCircleOutline_float_oct8(center, radius);
+
+#if 0
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.y += radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = maxCorner.x - firstPos.x + m_cellSize/(float)2;
+	float dist2FirstCellCenterY = firstPos.y - minCorner.y;
+
+	cout << "dist2FirstCellCenterX " << dist2FirstCellCenterX << endl;
+	cout << "dist2FirstCellCenterY " << dist2FirstCellCenterY << endl;
+
+	float err = dist2FirstCellCenterX  * dist2FirstCellCenterX + dist2FirstCellCenterY  * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterY;
+
+	int x = 0;
+	int y = (int)(center.y + radius) - (int)(center.y);
+
+	cout << "x, y " << x << " " << y << endl;
+
+	/*
+	int minX = center.x - radius;
+	int maxX = center.x + radius;
+
+	int centerX = center.x;
+	int centerY = center.y;
+
+	int minY = center.y - radius;
+	int maxY = center.y + radius;
+
+	int max2centerX = maxX - centerX;
+	int min2centerX = centerX - minX;
+
+	int max2centerY = maxY - centerY;
+	int min2centerY = centerY - minY;
+	*/
+	// need to the examine the 
+	while (y >= x)
+	{
+		// first quadrant;
+		setCell(x0 + x, y0 + y, Map::Cell::Wall);
+		setCell(x0 + y, y0 + x, Map::Cell::Wall);
+
+		// second quadant
+		setCell(x0 - x, y0 + y, Map::Cell::Wall);
+		setCell(x0 - y, y0 + x, Map::Cell::Wall);
+
+		// third quadant
+		setCell(x0 - x, y0 - y, Map::Cell::Wall);
+		setCell(x0 - y, y0 - x, Map::Cell::Wall);
+
+		// fourth quadrant
+		setCell(x0 + y, y0 - x, Map::Cell::Wall);
+		setCell(x0 + x, y0 - y, Map::Cell::Wall);
+
+		// if the error function is less than zero, we only increment x
+		// each pixel, we have two mult, two add
+		// we can do better  (check page 19, 20)
+		// http://alamos.math.arizona.edu/~rychlik/CourseDir/535/resources/LineDrawing.pdf
+
+		if (err <= 0)
+		{
+			err = err + 2 * x + 3;
+		}
+		else
+		{
+			err = err + 2 * (x - y) + 5;
+			y--;
+		}
+		x++;
+	}
+
+#endif
+
+}
+
+void Map::drawCircleOutline_float_oct1(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.y += radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = maxCorner.x - firstPos.x + m_cellSize / (float)2;
+	float dist2FirstCellCenterY = firstPos.y - minCorner.y;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterY;
+
+	int x = 0;
+	int y = (int)(firstPos.y) - (int)(center.y);
+
+	drawCircleOutline_float_traverseY2X(x, y, center, err, 1, 1);
+}
 
 
+
+
+void Map::drawCircleOutline_float_oct4(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.y -= radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = maxCorner.x - firstPos.x + m_cellSize / (float)2;
+	float dist2FirstCellCenterY = maxCorner.y - firstPos.y;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterY;
+
+	int x = 0;
+	int y = (int)(center.y) - (int)(firstPos.y);
+
+	drawCircleOutline_float_traverseY2X(x, y, center, err, 1, -1);
+}
+
+
+
+
+void Map::drawCircleOutline_float_oct5(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.y -= radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = firstPos.x - minCorner.x + m_cellSize / (float)2;
+	float dist2FirstCellCenterY = maxCorner.y - firstPos.y;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterY;
+
+	int x = 0;
+	int y = (int)(center.y) - (int)(firstPos.y);
+
+	drawCircleOutline_float_traverseY2X(x, y, center, err, -1, -1);
+}
+
+
+void Map::drawCircleOutline_float_oct8(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.y += radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = firstPos.x - minCorner.x + m_cellSize / (float)2;
+	float dist2FirstCellCenterY = firstPos.y - minCorner.y;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterY;
+
+	int x = 0;
+	int y = (int)(firstPos.y) - (int)(center.y);
+
+	drawCircleOutline_float_traverseY2X(x, y, center, err, -1, 1);
+}
+
+
+void Map::drawCircleOutline_float_traverseY2X(int x, int y, glm::vec2 center, float err, int xSign, int ySign)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	// need to the examine the 
+	while (y >= x)
+	{
+		setCell(x0 + xSign * x, y0 + ySign * y, Map::Cell::Wall);
+
+		if (err <= 0)
+		{
+			err = err + 2 * x + 3;
+		}
+		else
+		{
+			err = err + 2 * (x - y) + 5;
+			y--;
+		}
+		x++;
+	}
+}
+
+
+
+
+
+void Map::drawCircleOutline_float_oct2(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.x += radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = firstPos.x - minCorner.x;									
+	float dist2FirstCellCenterY = maxCorner.y - firstPos.y + m_cellSize / (float)2;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterX;
+
+	int x = (int)(firstPos.x) - (int)(center.x);
+	int y = 0;
+
+	drawCircleOutline_float_traverseX2Y(x, y, center, err, 1, 1);
+}
+
+void Map::drawCircleOutline_float_oct3(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.x += radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = firstPos.x - minCorner.x;
+	float dist2FirstCellCenterY = firstPos.y - minCorner.y + m_cellSize / (float)2;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterX;
+
+	int x = (int)(firstPos.x) - (int)(center.x);
+	int y = 0;
+
+	drawCircleOutline_float_traverseX2Y(x, y, center, err, 1, -1);
+}
+
+void Map::drawCircleOutline_float_oct6(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.x -= radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = maxCorner.x - firstPos.x;
+	float dist2FirstCellCenterY = firstPos.y - minCorner.y + m_cellSize / (float)2;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterX;
+
+	int x = (int)(center.x) - (int)(firstPos.x);
+	int y = 0;
+
+	drawCircleOutline_float_traverseX2Y(x, y, center, err, -1, -1);
+}
+
+
+void Map::drawCircleOutline_float_oct7(glm::vec2 center, float radius)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	glm::vec2 firstPos = center;
+	firstPos.x -= radius;
+
+	glm::ivec2 firstCellGridCoord = worldPos2GridCoord(firstPos);
+	glm::vec2 minCorner = getCellMinCorner(firstCellGridCoord);
+	glm::vec2 maxCorner = getCellMaxCorner(firstCellGridCoord);
+
+	float dist2FirstCellCenterX = maxCorner.x - firstPos.x;
+	float dist2FirstCellCenterY = maxCorner.y - firstPos.y + m_cellSize / (float)2;
+
+	float err = dist2FirstCellCenterX * dist2FirstCellCenterX + dist2FirstCellCenterY * dist2FirstCellCenterY - 2 * radius * dist2FirstCellCenterX;
+	
+	int x = (int)(center.x) - (int)(firstPos.x);
+	int y = 0;
+
+	drawCircleOutline_float_traverseX2Y(x, y, center, err, -1, 1);
+}
+
+
+
+void Map::drawCircleOutline_float_traverseX2Y(int x, int y, glm::vec2 center, float err, int xSign, int ySign)
+{
+	float x0 = center.x;
+	float y0 = center.y;
+
+	// need to the examine the 
+	while (x >= y)
+	{
+		setCell(x0 + xSign * x, y0 + ySign * y, Map::Cell::Wall);
+
+		if (err <= 0)
+		{
+			err = err + 2 * y + 3;
+		}
+		else
+		{
+			err = err + 2 * (y - x) + 5;
+			x--;
+		}
+		y++;
+	}
+}
+
+
+
+
+
+#if 0
 void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 {
 	float x0 = center.x;
@@ -520,7 +869,7 @@ void Map::drawCircleOutline_float(glm::vec2 center, float radius)
 	}
 	setCell_Float(gx, gy, Map::Cell::Wall);
 }
-
+#endif
 
 
 void Map::fillCircle_float(glm::vec2 center, float radius)

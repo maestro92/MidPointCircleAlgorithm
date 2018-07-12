@@ -18,7 +18,7 @@ class MapView
 		void render(Pipeline& p);
 		void reset();
 		void initCircle(Circle circle);
-		void createMeshForGridCellsHighlight(vector<glm::vec2> traversal);
+		void createMeshForGridCellsHighlight(vector<glm::ivec2> traversal);
 		WorldObject& getWorldObject(int x, int y);
 
 	private:

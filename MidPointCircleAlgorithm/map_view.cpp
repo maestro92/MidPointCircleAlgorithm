@@ -150,7 +150,7 @@ void MapView::render(Pipeline& p)
 
 
 
-void MapView::createMeshForGridCellsHighlight(vector<glm::vec2> traversal)
+void MapView::createMeshForGridCellsHighlight(vector<glm::ivec2> traversal)
 {
 	//	gridLines
 	std::vector<VertexData> vertices;
@@ -159,7 +159,7 @@ void MapView::createMeshForGridCellsHighlight(vector<glm::vec2> traversal)
 
 	for (int i = 0; i < traversal.size(); i++)
 	{
-		glm::vec2 gridCoord = traversal[i];
+		glm::ivec2 gridCoord = traversal[i];
 
 		glm::vec2 pos0 = m_map->getCellMinCorner(gridCoord);
 		glm::vec2 pos2 = m_map->getCellMaxCorner(gridCoord);
