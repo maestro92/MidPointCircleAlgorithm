@@ -54,17 +54,22 @@ class Map
 		void drawCircle_float(glm::vec2 center, float radius, bool fill);
 		void drawCircleOutline_float(glm::vec2 center, float radius);
 		
-		void drawCircleOutline_float_oct1(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct2(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct3(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct4(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct5(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct6(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct7(glm::vec2 center, float radius);
-		void drawCircleOutline_float_oct8(glm::vec2 center, float radius);
+
+		void drawCircleOutline_float_posY(glm::vec2 firstPos, glm::vec2 center, float radius);
+
+		void drawCircleOutline_float_traverseY2X(glm::vec2 center, 
+			int x, int y, float err, int xSign, int ySign,
+			int x2, int y2, float err2, int xSign2, int ySign2);
+
+		void drawCircleOutline_float_oct1(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct2(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct3(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct4(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct5(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct6(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct7(glm::vec2 firstPos, glm::vec2 center, float radius);
+		void drawCircleOutline_float_oct8(glm::vec2 firstPos, glm::vec2 center, float radius);
 		void drawCircleOutline_float_traverseY2X(int x, int y, glm::vec2 center, float err, int xSign, int ySign);
-
-
 		void drawCircleOutline_float_traverseX2Y(int x, int y, glm::vec2 center, float err, int xSign, int ySign);
 
 		void fillCircle_float(glm::vec2 center, float radius);
