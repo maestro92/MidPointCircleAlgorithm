@@ -541,7 +541,7 @@ void Map::drawCircleOutline_float_traverseX2Y(int x, int y, glm::vec2 center, fl
 
 
 
-
+// hacky solution
 void Map::fillCircle_float(glm::vec2 center, float radius)
 {
 	float x0 = center.x;
@@ -707,41 +707,6 @@ void Map::fillCircle_float(glm::vec2 center, float radius)
 	fillLine_int(gx3, gx4, gy4, Map::Cell::Wall);
 
 }
-
-/*
-void Map::fillCircle_float(glm::vec2 center, float radius)
-{
-	float x0 = center.x;
-	float y0 = center.y;
-
-	float x = 0;
-	float y = radius;
-	float err = 1.25 - radius;
-
-	// to compensate for non-symmetry
-	// sometimes, there is no symmetry, so we do an extra iteration to make up for it
-	//	while (y >= x)
-	while (y >= (x - 1))
-	{
-		fillLine_float(x0 - x, x0 + x, y0 + y, Map::Cell::Wall);
-		fillLine_float(x0 - y, x0 + y, y0 + x, Map::Cell::Wall);
-		fillLine_float(x0 - x, x0 + x, y0 - y, Map::Cell::Wall);
-		fillLine_float(x0 - y, x0 + y, y0 - x, Map::Cell::Wall);
-
-		// if the error function is less than zero, we only increment x
-		if (err <= 0)
-		{
-			err = err + 2 * x + 3;
-		}
-		else
-		{
-			err = err + 2 * (x - y) + 5;
-			y--;
-		}
-		x++;
-	}
-}
-*/
 
 void Map::fillLine_float(float x0, float x1, float y, Map::Cell gem)
 {
