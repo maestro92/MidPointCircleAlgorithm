@@ -402,7 +402,14 @@ void DDARaycasting::update()
 						{
 							map.clearMap();
 							curCircle.radius = (int)(event.key.keysym.sym) - SDLK_0;
-							curCircle.radius += FRACTIONAL_EDTRA_RADIUS;
+							if (addHalfRadiusFlag)
+							{
+								curCircle.radius = (int)curCircle.radius + FRACTIONAL_EDTRA_RADIUS;
+							}
+							else
+							{
+								curCircle.radius = (int)curCircle.radius;
+							}
 
 							if (floatMode == true)
 							{
